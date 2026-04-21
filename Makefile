@@ -6,7 +6,7 @@ PROJECT_NAME := crossplane-provider-slack
 MODULE := github.com/avodah-inc/crossplane-provider-slack
 
 # Registry and image configuration
-REGISTRY := ghcr.io/avodah-inc
+REGISTRY := ghcr.io/starlightromero
 BASE_IMAGE := gcr.io/distroless/static:nonroot
 
 # Binary names

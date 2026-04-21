@@ -14,9 +14,9 @@ permissions:
 
 env:
   GO_VERSION: "1.26"
-  FAMILY_IMAGE: ghcr.io/avodah-inc/provider-family-slack
-  CONVERSATION_IMAGE: ghcr.io/avodah-inc/provider-slack-conversation
-  USERGROUP_IMAGE: ghcr.io/avodah-inc/provider-slack-usergroup
+  FAMILY_IMAGE: ghcr.io/starlightromero/provider-family-slack
+  CONVERSATION_IMAGE: ghcr.io/starlightromero/provider-slack-conversation
+  USERGROUP_IMAGE: ghcr.io/starlightromero/provider-slack-usergroup
 
 jobs:
   semantic-release:
@@ -47,11 +47,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - image: ghcr.io/avodah-inc/provider-family-slack
+          - image: ghcr.io/starlightromero/provider-family-slack
             dockerfile: Dockerfile.family
-          - image: ghcr.io/avodah-inc/provider-slack-conversation
+          - image: ghcr.io/starlightromero/provider-slack-conversation
             dockerfile: Dockerfile.conversation
-          - image: ghcr.io/avodah-inc/provider-slack-usergroup
+          - image: ghcr.io/starlightromero/provider-slack-usergroup
             dockerfile: Dockerfile.usergroup
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -98,13 +98,13 @@ jobs:
       matrix:
         include:
           - name: family-slack
-            image: ghcr.io/avodah-inc/provider-family-slack
+            image: ghcr.io/starlightromero/provider-family-slack
             package-root: package/family
           - name: slack-conversation
-            image: ghcr.io/avodah-inc/provider-slack-conversation
+            image: ghcr.io/starlightromero/provider-slack-conversation
             package-root: package/conversation
           - name: slack-usergroup
-            image: ghcr.io/avodah-inc/provider-slack-usergroup
+            image: ghcr.io/starlightromero/provider-slack-usergroup
             package-root: package/usergroup
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2

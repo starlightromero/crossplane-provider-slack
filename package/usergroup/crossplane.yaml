@@ -8,11 +8,11 @@ metadata:
     meta.crossplane.io/description: Crossplane provider for Slack user groups and membership
 spec:
   controller:
-    image: ghcr.io/avodah-inc/provider-slack-usergroup:latest
+    image: ghcr.io/starlightromero/provider-slack-usergroup:latest
   crossplane:
     version: ">=v2.0.0"
   capabilities:
     - safe-start
   dependsOn:
-    - provider: ghcr.io/avodah-inc/provider-family-slack
+    - provider: ghcr.io/starlightromero/provider-family-slack
       version: ">=v0.1.0"

@@ -8,7 +8,7 @@ metadata:
     meta.crossplane.io/description: Crossplane provider family for managing Slack workspace resources
 spec:
   controller:
-    image: ghcr.io/avodah-inc/provider-family-slack:latest
+    image: ghcr.io/starlightromero/provider-family-slack:latest
   crossplane:
     version: ">=v2.0.0"
   capabilities:
