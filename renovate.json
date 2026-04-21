@@ -21,20 +21,20 @@
     {
       "description": "Group Crossplane and Upjet updates",
       "matchManagers": ["gomod"],
-      "matchPackagePrefixes": [
-        "github.com/crossplane/",
-        "github.com/crossplane-contrib/"
-      ],
-      "groupName": "crossplane-ecosystem"
+      "groupName": "crossplane-ecosystem",
+      "matchPackageNames": [
+        "github.com/crossplane/{/,}**",
+        "github.com/crossplane-contrib/{/,}**"
+      ]
     },
     {
       "description": "Group Kubernetes client updates",
       "matchManagers": ["gomod"],
-      "matchPackagePrefixes": [
-        "k8s.io/",
-        "sigs.k8s.io/"
-      ],
-      "groupName": "kubernetes-deps"
+      "groupName": "kubernetes-deps",
+      "matchPackageNames": [
+        "k8s.io/{/,}**",
+        "sigs.k8s.io/{/,}**"
+      ]
     },
     {
       "description": "Automerge Dockerfile base image patch updates",
