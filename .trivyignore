@@ -1,0 +1,3 @@
+# Trivy false positive suppressions
+# Add CVE IDs here to suppress known false positives.
+# Format: CVE-YYYY-NNNNN

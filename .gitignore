@@ -1,0 +1,26 @@
+# Build output
+_output/
+bin/
+provider
+provider-conversation
+provider-usergroup
+family-provider
+
+# Test coverage
+coverage.*
+
+# SonarQube
+.scannerwork/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Crossplane packages
+*.xpkg

@@ -1,0 +1,15 @@
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-family-slack
+  annotations:
+    meta.crossplane.io/maintainer: Avodah Inc <engineering@avodah.io>
+    meta.crossplane.io/source: https://github.com/avodah-inc/crossplane-provider-slack
+    meta.crossplane.io/description: Crossplane provider family for managing Slack workspace resources
+spec:
+  controller:
+    image: ghcr.io/avodah-inc/provider-family-slack:latest
+  crossplane:
+    version: ">=v2.0.0"
+  capabilities:
+    - safe-start

@@ -1,0 +1,18 @@
+apiVersion: meta.pkg.crossplane.io/v1
+kind: Provider
+metadata:
+  name: provider-slack-conversation
+  annotations:
+    meta.crossplane.io/maintainer: Avodah Inc <engineering@avodah.io>
+    meta.crossplane.io/source: https://github.com/avodah-inc/crossplane-provider-slack
+    meta.crossplane.io/description: Crossplane provider for Slack conversations, bookmarks, and pins
+spec:
+  controller:
+    image: ghcr.io/avodah-inc/provider-slack-conversation:latest
+  crossplane:
+    version: ">=v2.0.0"
+  capabilities:
+    - safe-start
+  dependsOn:
+    - provider: ghcr.io/avodah-inc/provider-family-slack
+      version: ">=v0.1.0"

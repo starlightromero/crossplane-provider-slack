@@ -1,0 +1,16 @@
+FROM golang:1.26 AS builder
+ARG VERSION=dev
+ARG TARGETOS=linux
+ARG TARGETARCH=amd64
+WORKDIR /workspace
+COPY go.mod go.sum ./
+RUN go mod download
+COPY . .
+RUN CGO_ENABLED=0 GOOS="${TARGETOS}" GOARCH="${TARGETARCH}" \
+  go build -ldflags "-s -w -X github.com/avodah-inc/crossplane-provider-slack/internal/version.Version=${VERSION}" \
+  -o /usr/local/bin/provider ./cmd/provider-usergroup/
+
+FROM gcr.io/distroless/static:nonroot
+COPY --from=builder /usr/local/bin/provider /usr/local/bin/provider
+USER 65532:65532
+ENTRYPOINT ["provider"]
