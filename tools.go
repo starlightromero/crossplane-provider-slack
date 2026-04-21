@@ -4,7 +4,7 @@
 package tools
 
 import (
-	_ "github.com/crossplane/crossplane-runtime/apis/common/v1"
+	_ "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
 	_ "github.com/crossplane/crossplane-tools/cmd/angryjet"
 	_ "k8s.io/apimachinery/pkg/apis/meta/v1"
 	_ "pgregory.net/rapid"

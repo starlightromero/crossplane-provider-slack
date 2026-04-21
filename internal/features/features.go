@@ -17,7 +17,7 @@ limitations under the License.
 // Package features defines feature flag constants for the crossplane-provider-slack controllers.
 package features
 
-import "github.com/crossplane/crossplane-runtime/pkg/feature"
+import "github.com/crossplane/crossplane-runtime/v2/pkg/feature"
 
 // Feature flags for managed resource controllers. Each flag gates the
 // registration of the corresponding controller, allowing operators to

@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 )
 
 // Ensure UserGroupMembers satisfies the resource.Managed interface.
@@ -52,16 +52,6 @@ func (u *UserGroupMembers) GetWriteConnectionSecretToReference() *xpv1.SecretRef
 // SetWriteConnectionSecretToReference sets the connection secret reference.
 func (u *UserGroupMembers) SetWriteConnectionSecretToReference(ref *xpv1.SecretReference) {
 	u.Spec.WriteConnectionSecretToReference = ref
-}
-
-// GetPublishConnectionDetailsTo returns the publish connection details reference.
-func (u *UserGroupMembers) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
-	return u.Spec.PublishConnectionDetailsTo
-}
-
-// SetPublishConnectionDetailsTo sets the publish connection details reference.
-func (u *UserGroupMembers) SetPublishConnectionDetailsTo(ref *xpv1.PublishConnectionDetailsTo) {
-	u.Spec.PublishConnectionDetailsTo = ref
 }
 
 // GetManagementPolicies returns the management policies.

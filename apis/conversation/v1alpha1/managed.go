@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 )
 
 // Ensure Conversation satisfies the resource.Managed interface.
@@ -52,16 +52,6 @@ func (c *Conversation) GetWriteConnectionSecretToReference() *xpv1.SecretReferen
 // SetWriteConnectionSecretToReference sets the connection secret reference.
 func (c *Conversation) SetWriteConnectionSecretToReference(ref *xpv1.SecretReference) {
 	c.Spec.WriteConnectionSecretToReference = ref
-}
-
-// GetPublishConnectionDetailsTo returns the publish connection details reference.
-func (c *Conversation) GetPublishConnectionDetailsTo() *xpv1.PublishConnectionDetailsTo {
-	return c.Spec.PublishConnectionDetailsTo
-}
-
-// SetPublishConnectionDetailsTo sets the publish connection details reference.
-func (c *Conversation) SetPublishConnectionDetailsTo(ref *xpv1.PublishConnectionDetailsTo) {
-	c.Spec.PublishConnectionDetailsTo = ref
 }
 
 // GetManagementPolicies returns the management policies.
