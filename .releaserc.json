@@ -14,7 +14,8 @@
     "@semantic-release/release-notes-generator",
     ["@semantic-release/github", {
       "successComment": false,
-      "failTitle": false
+      "failTitle": false,
+      "draftRelease": true
     }]
   ]
 }
