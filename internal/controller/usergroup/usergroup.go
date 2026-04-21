@@ -21,11 +21,11 @@ import (
 	"context"
 	"errors"
 
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	xperrors "github.com/crossplane/crossplane-runtime/pkg/errors"
-	"github.com/crossplane/crossplane-runtime/pkg/meta"
-	"github.com/crossplane/crossplane-runtime/pkg/reconciler/managed"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	xperrors "github.com/crossplane/crossplane-runtime/v2/pkg/errors"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/meta"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/reconciler/managed"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	usergroupv1alpha1 "github.com/avodah-inc/crossplane-provider-slack/apis/usergroup/v1alpha1"
@@ -54,7 +54,7 @@ const (
 // connector implements managed.ExternalConnecter.
 type connector struct {
 	kube  client.Client
-	usage resource.Tracker
+	usage *resource.LegacyProviderConfigUsageTracker
 	newFn func(token string, opts ...slack.ClientOption) slack.ClientAPI
 }
 
@@ -64,7 +64,7 @@ func (c *connector) Connect(ctx context.Context, mg resource.Managed) (managed.E
 		return nil, xperrors.New(errNotUserGroup)
 	}
 
-	if err := c.usage.Track(ctx, mg); err != nil {
+	if err := c.usage.Track(ctx, cr); err != nil {
 		return nil, xperrors.Wrap(err, errTrackUsage)
 	}
 

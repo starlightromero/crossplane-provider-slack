@@ -17,8 +17,8 @@ limitations under the License.
 package v1alpha1
 
 import (
-	xpv1 "github.com/crossplane/crossplane-runtime/apis/common/v1"
-	"github.com/crossplane/crossplane-runtime/pkg/resource"
+	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
+	"github.com/crossplane/crossplane-runtime/v2/pkg/resource"
 )
 
 // ProviderConfig interface implementations.
@@ -26,7 +26,7 @@ import (
 // crossplane-runtime, enabling the standard providerconfig reconciler.
 
 var _ resource.ProviderConfig = &ProviderConfig{}
-var _ resource.ProviderConfigUsage = &ProviderConfigUsage{}
+var _ resource.LegacyProviderConfigUsage = &ProviderConfigUsage{}
 var _ resource.ProviderConfigUsageList = &ProviderConfigUsageList{}
 
 // SetConditions sets the supplied conditions on the ProviderConfig.
