@@ -141,15 +141,21 @@ jobs:
 
       - name: Pull platform-specific runtime image
         run: |
-          docker pull --platform linux/${{ matrix.arch }}             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}
+          docker pull --platform linux/${{ matrix.arch }} \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}
 
       - name: Build Crossplane package
         run: |
-          crossplane xpkg build             --package-root=${{ matrix.package-root }}             --embed-runtime-image=${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}             -o provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg
+          crossplane xpkg build \
+            --package-root=${{ matrix.package-root }} \
+            --embed-runtime-image=${{ matrix.image }}:${{ needs.semantic-release.outputs.version }} \
+            -o provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg
 
       - name: Push arch-specific Crossplane package
         run: |
-          crossplane xpkg push             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}             -f provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg
+          crossplane xpkg push \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }} \
+            -f provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg
 
       - name: Upload xpkg artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
@@ -180,13 +186,23 @@ jobs:
 
       - name: Create and push multi-arch manifest
         run: |
-          docker manifest create             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}             --amend ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-amd64             --amend ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-arm64
+          docker manifest create \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }} \
+            --amend ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-amd64 \
+            --amend ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-arm64
 
-          docker manifest annotate             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-amd64             --os linux --arch amd64
+          docker manifest annotate \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }} \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-amd64 \
+            --os linux --arch amd64
 
-          docker manifest annotate             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-arm64             --os linux --arch arm64
+          docker manifest annotate \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }} \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-arm64 \
+            --os linux --arch arm64
 
-          docker manifest push             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}
+          docker manifest push \
+            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}
 
   release-assets:
     name: Release Assets
@@ -213,10 +229,19 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release upload ${{ needs.semantic-release.outputs.tag }}             provider-family-slack-amd64.xpkg             provider-family-slack-arm64.xpkg             provider-slack-conversation-amd64.xpkg             provider-slack-conversation-arm64.xpkg             provider-slack-usergroup-amd64.xpkg             provider-slack-usergroup-arm64.xpkg             sbom.cdx.json
+          gh release upload ${{ needs.semantic-release.outputs.tag }} \
+            provider-family-slack-amd64.xpkg \
+            provider-family-slack-arm64.xpkg \
+            provider-slack-conversation-amd64.xpkg \
+            provider-slack-conversation-arm64.xpkg \
+            provider-slack-usergroup-amd64.xpkg \
+            provider-slack-usergroup-arm64.xpkg \
+            sbom.cdx.json
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          gh release edit ${{ needs.semantic-release.outputs.tag }}             --repo ${{ github.repository }}             --draft=false
+          gh release edit ${{ needs.semantic-release.outputs.tag }} \
+            --repo ${{ github.repository }} \
+            --draft=false
