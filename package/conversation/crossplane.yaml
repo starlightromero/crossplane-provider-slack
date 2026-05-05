@@ -8,7 +8,7 @@ metadata:
     meta.crossplane.io/description: Crossplane provider for Slack conversations, bookmarks, and pins
 spec:
   controller:
-    image: ghcr.io/starlightromero/provider-slack-conversation:latest
+    image: ghcr.io/starlightromero/provider-slack-conversation:VERSION_PLACEHOLDER
   crossplane:
     version: ">=v2.0.0"
   capabilities:
