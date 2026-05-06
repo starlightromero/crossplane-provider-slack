@@ -115,6 +115,7 @@ jobs:
           tags: ${{ matrix.include_def.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}
           build-args: |
             VERSION=${{ needs.semantic-release.outputs.version }}
+          provenance: false
           cache-from: type=gha
           cache-to: type=gha,mode=max
 
@@ -142,7 +143,7 @@ jobs:
             "${{ env.CONVERSATION_IMAGE }}" \
             "${{ env.USERGROUP_IMAGE }}"; do
 
-            docker manifest create \
+            docker manifest create --amend \
               "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-amd64" \
               "${IMAGE}:${VERSION}-arm64"
@@ -202,9 +203,12 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+
       - name: Pull arch-specific controller image
         run: |
-          docker pull \
+          docker pull --platform linux/${{ matrix.arch }} \
             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}
 
       - name: Build Crossplane package with embedded runtime
