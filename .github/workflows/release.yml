@@ -166,7 +166,7 @@ jobs:
   # ---------------------------------------------------------------------------
   package:
     name: Crossplane Package (${{ matrix.name }}/${{ matrix.arch }})
-    runs-on: ubuntu-latest
+    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
     needs: [semantic-release, build-push]
     if: needs.semantic-release.outputs.new-release == 'true'
     strategy:
@@ -203,12 +203,10 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4
 
       - name: Pull arch-specific controller image
         run: |
-          docker pull --platform linux/${{ matrix.arch }} \
+          docker pull \
             ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}
 
       - name: Build Crossplane package with embedded runtime
