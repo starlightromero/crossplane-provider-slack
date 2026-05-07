@@ -2,7 +2,7 @@ module github.com/avodah-inc/crossplane-provider-slack
 
 go 1.26.0
 
-toolchain go1.26.2
+toolchain go1.26.3
 
 require (
 	github.com/crossplane/crossplane-runtime/v2 v2.2.1
