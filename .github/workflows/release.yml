@@ -253,21 +253,21 @@ jobs:
             "${{ env.USERGROUP_IMAGE }}"; do
 
             docker manifest create \
-              "${IMAGE}:${VERSION}-xpkg" \
+              "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-xpkg-amd64" \
               "${IMAGE}:${VERSION}-xpkg-arm64"
 
             docker manifest annotate \
-              "${IMAGE}:${VERSION}-xpkg" \
+              "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-xpkg-amd64" \
               --os linux --arch amd64
 
             docker manifest annotate \
-              "${IMAGE}:${VERSION}-xpkg" \
+              "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-xpkg-arm64" \
               --os linux --arch arm64
 
-            docker manifest push "${IMAGE}:${VERSION}-xpkg"
+            docker manifest push "${IMAGE}:${VERSION}"
           done
 
   # ---------------------------------------------------------------------------
