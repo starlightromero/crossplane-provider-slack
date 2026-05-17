@@ -119,7 +119,6 @@ xpkg-build.family: ## Build the family provider Crossplane package
 	@mkdir -p $(XPKG_DIR)
 	crossplane xpkg build \
 		--package-root=package/family \
-		--embed-runtime-image=$(REGISTRY)/$(FAMILY_IMAGE):$(VERSION) \
 		-o $(XPKG_DIR)/$(FAMILY_IMAGE).xpkg
 
 .PHONY: xpkg-build.conversation
@@ -128,7 +127,6 @@ xpkg-build.conversation: ## Build the conversation provider Crossplane package
 	@mkdir -p $(XPKG_DIR)
 	crossplane xpkg build \
 		--package-root=package/conversation \
-		--embed-runtime-image=$(REGISTRY)/$(CONVERSATION_IMAGE):$(VERSION) \
 		-o $(XPKG_DIR)/$(CONVERSATION_IMAGE).xpkg
 
 .PHONY: xpkg-build.usergroup
@@ -137,7 +135,6 @@ xpkg-build.usergroup: ## Build the usergroup provider Crossplane package
 	@mkdir -p $(XPKG_DIR)
 	crossplane xpkg build \
 		--package-root=package/usergroup \
-		--embed-runtime-image=$(REGISTRY)/$(USERGROUP_IMAGE):$(VERSION) \
 		-o $(XPKG_DIR)/$(USERGROUP_IMAGE).xpkg
 
 .PHONY: xpkg-push
