@@ -9,6 +9,21 @@ metadata:
 spec:
   controller:
     image: ghcr.io/starlightromero/provider-slack-usergroup:VERSION_PLACEHOLDER
+    permissionRequests:
+      - apiGroups:
+          - slack.crossplane.io
+        resources:
+          - providerconfigs
+          - providerconfigs/status
+          - providerconfigusages
+          - providerconfigusages/status
+        verbs:
+          - get
+          - list
+          - watch
+          - update
+          - patch
+          - create
   crossplane:
     version: ">=v2.0.0"
   capabilities:
