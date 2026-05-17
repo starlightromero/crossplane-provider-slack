@@ -163,16 +163,15 @@ jobs:
           done
 
   # ---------------------------------------------------------------------------
-  # Build Crossplane xpkg per-arch with embedded runtime
+  # Build and push Crossplane xpkg (arch-independent, no embedded runtime)
   # ---------------------------------------------------------------------------
   package:
-    name: Crossplane Package (${{ matrix.name }}/${{ matrix.arch }})
-    runs-on: ${{ matrix.arch == 'arm64' && 'ubuntu-24.04-arm' || 'ubuntu-latest' }}
-    needs: [semantic-release, build-push]
+    name: Crossplane Package (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    needs: [semantic-release, image-manifest]
     if: needs.semantic-release.outputs.new-release == 'true'
     strategy:
       matrix:
-        arch: [amd64, arm64]
         name: [family-slack, slack-conversation, slack-usergroup]
         include:
           - name: family-slack
@@ -204,72 +203,23 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-
-      - name: Pull arch-specific controller image
-        run: |
-          docker pull \
-            ${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}
-
-      - name: Build Crossplane package with embedded runtime
+      - name: Build Crossplane package
         run: |
           crossplane xpkg build \
             --package-root=${{ matrix.package-root }} \
-            --embed-runtime-image=${{ matrix.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }} \
-            -o provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg
+            -o provider-${{ matrix.name }}.xpkg
 
-      - name: Push arch-specific xpkg
+      - name: Push xpkg
         run: |
           crossplane xpkg push \
-            -f provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg \
-            ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }}-xpkg-${{ matrix.arch }}
+            -f provider-${{ matrix.name }}.xpkg \
+            ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }}
 
       - name: Upload xpkg artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: xpkg-${{ matrix.name }}-${{ matrix.arch }}
-          path: provider-${{ matrix.name }}-${{ matrix.arch }}.xpkg
-
-  # ---------------------------------------------------------------------------
-  # Create multi-arch manifest lists for each xpkg
-  # ---------------------------------------------------------------------------
-  package-manifest:
-    name: Crossplane Package Manifests
-    runs-on: ubuntu-latest
-    needs: [semantic-release, package]
-    steps:
-      - name: Login to GHCR
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create and push manifest lists
-        run: |
-          VERSION="v${{ needs.semantic-release.outputs.version }}"
-
-          for IMAGE in \
-            "${{ env.FAMILY_IMAGE }}" \
-            "${{ env.CONVERSATION_IMAGE }}" \
-            "${{ env.USERGROUP_IMAGE }}"; do
-
-            docker manifest create \
-              "${IMAGE}:${VERSION}" \
-              "${IMAGE}:${VERSION}-xpkg-amd64" \
-              "${IMAGE}:${VERSION}-xpkg-arm64"
-
-            docker manifest annotate \
-              "${IMAGE}:${VERSION}" \
-              "${IMAGE}:${VERSION}-xpkg-amd64" \
-              --os linux --arch amd64
-
-            docker manifest annotate \
-              "${IMAGE}:${VERSION}" \
-              "${IMAGE}:${VERSION}-xpkg-arm64" \
-              --os linux --arch arm64
-
-            docker manifest push "${IMAGE}:${VERSION}"
-          done
+          name: xpkg-${{ matrix.name }}
+          path: provider-${{ matrix.name }}.xpkg
 
   # ---------------------------------------------------------------------------
   # Attach artifacts to GitHub Release and generate SBOM
@@ -277,7 +227,7 @@ jobs:
   release-assets:
     name: Release Assets
     runs-on: ubuntu-latest
-    needs: [semantic-release, package-manifest, image-manifest]
+    needs: [semantic-release, package, image-manifest]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
@@ -300,12 +250,9 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload ${{ needs.semantic-release.outputs.tag }} \
-            provider-family-slack-amd64.xpkg \
-            provider-family-slack-arm64.xpkg \
-            provider-slack-conversation-amd64.xpkg \
-            provider-slack-conversation-arm64.xpkg \
-            provider-slack-usergroup-amd64.xpkg \
-            provider-slack-usergroup-arm64.xpkg \
+            provider-family-slack.xpkg \
+            provider-slack-conversation.xpkg \
+            provider-slack-usergroup.xpkg \
             sbom.cdx.json
 
       - name: Publish release
