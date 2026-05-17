@@ -14,7 +14,6 @@ permissions:
 
 env:
   GO_VERSION: "1.26"
-  CROSSPLANE_CLI_VERSION: "v2.2.0"
   FAMILY_IMAGE: ghcr.io/starlightromero/provider-family-slack
   CONVERSATION_IMAGE: ghcr.io/starlightromero/provider-slack-conversation
   USERGROUP_IMAGE: ghcr.io/starlightromero/provider-slack-usergroup
@@ -163,7 +162,7 @@ jobs:
           done
 
   # ---------------------------------------------------------------------------
-  # Build and push Crossplane xpkg (arch-independent, no embedded runtime)
+  # Build and push Crossplane xpkg (arch-independent, bypasses CLI serialization)
   # ---------------------------------------------------------------------------
   package:
     name: Crossplane Package (${{ matrix.name }})
@@ -186,10 +185,8 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Install Crossplane CLI
-        run: |
-          curl -sL "https://raw.githubusercontent.com/crossplane/crossplane/master/install.sh" | XP_VERSION=${{ env.CROSSPLANE_CLI_VERSION }} sh
-          sudo mv crossplane /usr/local/bin/
+      - name: Install crane
+        uses: imjasonh/setup-crane@31b88afe9de28ae0ffa220711af4b60be9435f6e # v0.4
 
       - name: Substitute version into crossplane.yaml
         run: |
@@ -203,23 +200,38 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Build Crossplane package
+      - name: Build and push xpkg OCI image
         run: |
-          crossplane xpkg build \
-            --package-root=${{ matrix.package-root }} \
-            -o provider-${{ matrix.name }}.xpkg
+          # Build a YAML stream with crossplane.yaml + CRDs as package.yaml
+          cd ${{ matrix.package-root }}
+          {
+            echo "---"
+            cat crossplane.yaml
+            for crd in crds/*.yaml; do
+              echo "---"
+              cat "$crd"
+            done
+          } > /tmp/package.yaml
 
-      - name: Push xpkg
+          # Create OCI layer tarball with package.yaml at root
+          tar -cf /tmp/layer.tar -C /tmp package.yaml
+
+          # Push as single-layer OCI image (Crossplane uses the only layer as xpkg base)
+          crane append \
+            -f /tmp/layer.tar \
+            -t ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }}
+
+      - name: Copy xpkg for artifact upload
         run: |
-          crossplane xpkg push \
-            -f provider-${{ matrix.name }}.xpkg \
-            ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }}
+          crane export ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }} - \
+            > provider-${{ matrix.name }}.xpkg 2>/dev/null || true
 
       - name: Upload xpkg artifact
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: xpkg-${{ matrix.name }}
           path: provider-${{ matrix.name }}.xpkg
+          if-no-files-found: ignore
 
   # ---------------------------------------------------------------------------
   # Attach artifacts to GitHub Release and generate SBOM
