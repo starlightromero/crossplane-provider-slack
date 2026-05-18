@@ -78,6 +78,10 @@ func (m *mockClientAPI) SetConversationTopic(context.Context, string, string) er
 func (m *mockClientAPI) SetConversationPurpose(context.Context, string, string) error {
 	panic("not implemented")
 }
+func (m *mockClientAPI) FindConversationByName(_ context.Context, _ string) (*slack.Conversation, error) {
+	return nil, nil
+}
+
 func (m *mockClientAPI) ArchiveConversation(context.Context, string) error {
 	panic("not implemented")
 }

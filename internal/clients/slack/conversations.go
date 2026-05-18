@@ -91,3 +91,45 @@ func (c *Client) ArchiveConversation(ctx context.Context, channelID string) erro
 	_, err := c.Do(ctx, "conversations.archive", params)
 	return err
 }
+
+// FindConversationByName searches for a channel by name using conversations.list.
+// Returns the Conversation if found, or nil if not found.
+func (c *Client) FindConversationByName(ctx context.Context, name string) (*Conversation, error) {
+	var cursor string
+	for {
+		params := url.Values{}
+		params.Set("limit", "200")
+		params.Set("exclude_archived", "true")
+		if cursor != "" {
+			params.Set("cursor", cursor)
+		}
+
+		raw, err := c.Do(ctx, "conversations.list", params)
+		if err != nil {
+			return nil, err
+		}
+
+		var resp struct {
+			Channels []Conversation `json:"channels"`
+			Metadata struct {
+				NextCursor string `json:"next_cursor"`
+			} `json:"response_metadata"`
+		}
+		if err := json.Unmarshal(raw, &resp); err != nil {
+			return nil, fmt.Errorf("parsing conversations.list response: %w", err)
+		}
+
+		for i := range resp.Channels {
+			if resp.Channels[i].Name == name {
+				return &resp.Channels[i], nil
+			}
+		}
+
+		cursor = resp.Metadata.NextCursor
+		if cursor == "" {
+			break
+		}
+	}
+
+	return nil, nil
+}
