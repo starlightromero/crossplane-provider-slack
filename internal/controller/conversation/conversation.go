@@ -107,6 +107,21 @@ func (e *external) Observe(ctx context.Context, mg resource.Managed) (managed.Ex
 		return managed.ExternalObservation{ResourceExists: false}, nil
 	}
 
+	// If external-name is a channel name (not a Slack channel ID),
+	// look up the channel by name to adopt it.
+	if !isChannelID(externalName) {
+		conv, err := e.client.FindConversationByName(ctx, externalName)
+		if err != nil {
+			return managed.ExternalObservation{}, xperrors.Wrap(err, errObserve)
+		}
+		if conv == nil {
+			return managed.ExternalObservation{ResourceExists: false}, nil
+		}
+		// Adopt: set external-name to the channel ID
+		meta.SetExternalName(cr, conv.ID)
+		externalName = conv.ID
+	}
+
 	conv, err := e.client.GetConversationInfo(ctx, externalName)
 	if err != nil {
 		var slackErr *slack.SlackError
@@ -246,6 +261,15 @@ func (e *external) Delete(ctx context.Context, mg resource.Managed) (managed.Ext
 // Disconnect is a no-op for the Slack client.
 func (e *external) Disconnect(_ context.Context) error {
 	return nil
+}
+
+// isChannelID returns true if the string looks like a Slack channel ID
+// (starts with C, D, or G followed by alphanumeric characters).
+func isChannelID(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	return s[0] == 'C' || s[0] == 'D' || s[0] == 'G'
 }
 
 func isUpToDate(desired conversationv1alpha1.ConversationParameters, observed *slack.Conversation) bool {
