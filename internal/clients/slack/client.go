@@ -29,6 +29,7 @@ type ClientAPI interface {
 	SetConversationTopic(ctx context.Context, channelID, topic string) error
 	SetConversationPurpose(ctx context.Context, channelID, purpose string) error
 	ArchiveConversation(ctx context.Context, channelID string) error
+	JoinConversation(ctx context.Context, channelID string) error
 
 	// Bookmarks
 	AddBookmark(ctx context.Context, channelID string, params BookmarkParams) (*Bookmark, error)

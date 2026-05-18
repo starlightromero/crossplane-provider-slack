@@ -133,3 +133,12 @@ func (c *Client) FindConversationByName(ctx context.Context, name string) (*Conv
 
 	return nil, nil
 }
+
+// JoinConversation joins the bot to a Slack channel.
+func (c *Client) JoinConversation(ctx context.Context, channelID string) error {
+	params := url.Values{}
+	params.Set("channel", channelID)
+
+	_, err := c.Do(ctx, "conversations.join", params)
+	return err
+}

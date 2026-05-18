@@ -82,6 +82,10 @@ func (m *mockClientAPI) SetConversationTopic(context.Context, string, string) er
 func (m *mockClientAPI) SetConversationPurpose(context.Context, string, string) error {
 	panic("not implemented")
 }
+func (m *mockClientAPI) JoinConversation(_ context.Context, _ string) error {
+	return nil
+}
+
 func (m *mockClientAPI) FindConversationByName(_ context.Context, _ string) (*slack.Conversation, error) {
 	return nil, nil
 }
