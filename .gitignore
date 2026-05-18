@@ -24,3 +24,6 @@ Thumbs.db
 
 # Crossplane packages
 *.xpkg
+
+# Generated package metadata (built in CI)
+package/*/package.yaml

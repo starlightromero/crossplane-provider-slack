@@ -103,10 +103,23 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Substitute version into crossplane.yaml
+      - name: Generate package.yaml
         run: |
+          PKG_ROOT="${{ matrix.include_def.package-root }}"
+
+          # Substitute version placeholder
           sed -i "s/VERSION_PLACEHOLDER/v${{ needs.semantic-release.outputs.version }}/" \
-            ${{ matrix.include_def.package-root }}/crossplane.yaml
+            "${PKG_ROOT}/crossplane.yaml"
+
+          # Build multi-document YAML stream: metadata + CRDs
+          {
+            echo "---"
+            cat "${PKG_ROOT}/crossplane.yaml"
+            for crd in "${PKG_ROOT}"/crds/*.yaml; do
+              echo "---"
+              cat "$crd"
+            done
+          } > "${PKG_ROOT}/package.yaml"
 
       - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4
 
