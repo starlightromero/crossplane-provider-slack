@@ -144,21 +144,21 @@ jobs:
             "${{ env.USERGROUP_IMAGE }}"; do
 
             docker manifest create --amend \
-              "${IMAGE}:${VERSION}" \
+              "${IMAGE}:v${VERSION}-controller" \
               "${IMAGE}:${VERSION}-amd64" \
               "${IMAGE}:${VERSION}-arm64"
 
             docker manifest annotate \
-              "${IMAGE}:${VERSION}" \
+              "${IMAGE}:v${VERSION}-controller" \
               "${IMAGE}:${VERSION}-amd64" \
               --os linux --arch amd64
 
             docker manifest annotate \
-              "${IMAGE}:${VERSION}" \
+              "${IMAGE}:v${VERSION}-controller" \
               "${IMAGE}:${VERSION}-arm64" \
               --os linux --arch arm64
 
-            docker manifest push "${IMAGE}:${VERSION}"
+            docker manifest push "${IMAGE}:v${VERSION}-controller"
           done
 
   # ---------------------------------------------------------------------------
@@ -190,7 +190,7 @@ jobs:
 
       - name: Substitute version into crossplane.yaml
         run: |
-          sed -i "s/VERSION_PLACEHOLDER/${{ needs.semantic-release.outputs.version }}/" \
+          sed -i "s/VERSION_PLACEHOLDER/v${{ needs.semantic-release.outputs.version }}-controller/" \
             ${{ matrix.package-root }}/crossplane.yaml
 
       - name: Login to GHCR
