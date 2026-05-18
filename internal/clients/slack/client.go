@@ -24,6 +24,7 @@ type ClientAPI interface {
 	// Conversations
 	CreateConversation(ctx context.Context, name string, isPrivate bool) (*Conversation, error)
 	GetConversationInfo(ctx context.Context, channelID string) (*Conversation, error)
+	FindConversationByName(ctx context.Context, name string) (*Conversation, error)
 	RenameConversation(ctx context.Context, channelID, name string) error
 	SetConversationTopic(ctx context.Context, channelID, topic string) error
 	SetConversationPurpose(ctx context.Context, channelID, purpose string) error

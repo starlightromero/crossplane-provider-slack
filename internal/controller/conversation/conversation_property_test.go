@@ -38,6 +38,7 @@ type mockClientAPI struct {
 	setConversationTopicFn   func(ctx context.Context, channelID, topic string) error
 	setConversationPurposeFn func(ctx context.Context, channelID, purpose string) error
 	archiveConversationFn    func(ctx context.Context, channelID string) error
+	findConversationByNameFn func(ctx context.Context, name string) (*slack.Conversation, error)
 }
 
 func (m *mockClientAPI) CreateConversation(ctx context.Context, name string, isPrivate bool) (*slack.Conversation, error) {
@@ -73,6 +74,13 @@ func (m *mockClientAPI) SetConversationPurpose(ctx context.Context, channelID, p
 		return m.setConversationPurposeFn(ctx, channelID, purpose)
 	}
 	return nil
+}
+
+func (m *mockClientAPI) FindConversationByName(ctx context.Context, name string) (*slack.Conversation, error) {
+	if m.findConversationByNameFn != nil {
+		return m.findConversationByNameFn(ctx, name)
+	}
+	return nil, nil
 }
 
 func (m *mockClientAPI) ArchiveConversation(ctx context.Context, channelID string) error {
