@@ -99,7 +99,7 @@ func (c *Client) FindConversationByName(ctx context.Context, name string) (*Conv
 	for {
 		params := url.Values{}
 		params.Set("limit", "200")
-		params.Set("exclude_archived", "true")
+		params.Set("exclude_archived", "false")
 		if cursor != "" {
 			params.Set("cursor", cursor)
 		}
