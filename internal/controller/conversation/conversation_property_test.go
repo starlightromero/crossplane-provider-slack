@@ -76,6 +76,10 @@ func (m *mockClientAPI) SetConversationPurpose(ctx context.Context, channelID, p
 	return nil
 }
 
+func (m *mockClientAPI) JoinConversation(_ context.Context, _ string) error {
+	return nil
+}
+
 func (m *mockClientAPI) FindConversationByName(ctx context.Context, name string) (*slack.Conversation, error) {
 	if m.findConversationByNameFn != nil {
 		return m.findConversationByNameFn(ctx, name)

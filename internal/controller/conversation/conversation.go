@@ -206,6 +206,11 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 
 	externalName := meta.GetExternalName(cr)
 
+	// Ensure the bot is a member of the channel before updating.
+	if err := e.client.JoinConversation(ctx, externalName); err != nil {
+		return managed.ExternalUpdate{}, xperrors.Wrap(err, "cannot join conversation")
+	}
+
 	conv, err := e.client.GetConversationInfo(ctx, externalName)
 	if err != nil {
 		return managed.ExternalUpdate{}, xperrors.Wrap(err, errUpdate)
