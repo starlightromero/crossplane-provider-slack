@@ -40,7 +40,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   # ---------------------------------------------------------------------------
-  # Build and push per-arch controller images to GHCR
+  # Build and push combined images (controller + package.yaml) to GHCR
   # ---------------------------------------------------------------------------
   build-push:
     name: Build and Push (${{ matrix.name }}/${{ matrix.arch }})
@@ -54,45 +54,59 @@ jobs:
           - name: family-slack
             image: ghcr.io/starlightromero/provider-family-slack
             dockerfile: Dockerfile.family
+            package-root: package/family
           - name: conversation
             image: ghcr.io/starlightromero/provider-slack-conversation
             dockerfile: Dockerfile.conversation
+            package-root: package/conversation
           - name: usergroup
             image: ghcr.io/starlightromero/provider-slack-usergroup
             dockerfile: Dockerfile.usergroup
+            package-root: package/usergroup
         include:
           - arch: amd64
             include_def:
               name: family-slack
               image: ghcr.io/starlightromero/provider-family-slack
               dockerfile: Dockerfile.family
+              package-root: package/family
           - arch: arm64
             include_def:
               name: family-slack
               image: ghcr.io/starlightromero/provider-family-slack
               dockerfile: Dockerfile.family
+              package-root: package/family
           - arch: amd64
             include_def:
               name: conversation
               image: ghcr.io/starlightromero/provider-slack-conversation
               dockerfile: Dockerfile.conversation
+              package-root: package/conversation
           - arch: arm64
             include_def:
               name: conversation
               image: ghcr.io/starlightromero/provider-slack-conversation
               dockerfile: Dockerfile.conversation
+              package-root: package/conversation
           - arch: amd64
             include_def:
               name: usergroup
               image: ghcr.io/starlightromero/provider-slack-usergroup
               dockerfile: Dockerfile.usergroup
+              package-root: package/usergroup
           - arch: arm64
             include_def:
               name: usergroup
               image: ghcr.io/starlightromero/provider-slack-usergroup
               dockerfile: Dockerfile.usergroup
+              package-root: package/usergroup
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Substitute version into crossplane.yaml
+        run: |
+          sed -i "s/VERSION_PLACEHOLDER/v${{ needs.semantic-release.outputs.version }}/" \
+            ${{ matrix.include_def.package-root }}/crossplane.yaml
 
       - uses: docker/setup-qemu-action@ce360397dd3f832beb865e1373c09c0e9f86d70a # v4
 
@@ -112,7 +126,7 @@ jobs:
           file: ${{ matrix.include_def.dockerfile }}
           platforms: linux/${{ matrix.arch }}
           push: true
-          tags: ${{ matrix.include_def.image }}:${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}
+          tags: ${{ matrix.include_def.image }}:v${{ needs.semantic-release.outputs.version }}-${{ matrix.arch }}
           build-args: |
             VERSION=${{ needs.semantic-release.outputs.version }}
           provenance: false
@@ -120,10 +134,10 @@ jobs:
           cache-to: type=gha,mode=max
 
   # ---------------------------------------------------------------------------
-  # Create multi-arch manifests for controller images
+  # Create multi-arch manifests
   # ---------------------------------------------------------------------------
   image-manifest:
-    name: Controller Image Manifests
+    name: Image Manifests
     runs-on: ubuntu-latest
     needs: [semantic-release, build-push]
     steps:
@@ -134,9 +148,9 @@ jobs:
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Create and push controller image manifests
+      - name: Create and push multi-arch manifests
         run: |
-          VERSION="${{ needs.semantic-release.outputs.version }}"
+          VERSION="v${{ needs.semantic-release.outputs.version }}"
 
           for IMAGE in \
             "${{ env.FAMILY_IMAGE }}" \
@@ -144,94 +158,22 @@ jobs:
             "${{ env.USERGROUP_IMAGE }}"; do
 
             docker manifest create --amend \
-              "${IMAGE}:v${VERSION}-controller" \
+              "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-amd64" \
               "${IMAGE}:${VERSION}-arm64"
 
             docker manifest annotate \
-              "${IMAGE}:v${VERSION}-controller" \
+              "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-amd64" \
               --os linux --arch amd64
 
             docker manifest annotate \
-              "${IMAGE}:v${VERSION}-controller" \
+              "${IMAGE}:${VERSION}" \
               "${IMAGE}:${VERSION}-arm64" \
               --os linux --arch arm64
 
-            docker manifest push "${IMAGE}:v${VERSION}-controller"
+            docker manifest push "${IMAGE}:${VERSION}"
           done
-
-  # ---------------------------------------------------------------------------
-  # Build and push Crossplane xpkg (arch-independent, bypasses CLI serialization)
-  # ---------------------------------------------------------------------------
-  package:
-    name: Crossplane Package (${{ matrix.name }})
-    runs-on: ubuntu-latest
-    needs: [semantic-release, image-manifest]
-    if: needs.semantic-release.outputs.new-release == 'true'
-    strategy:
-      matrix:
-        name: [family-slack, slack-conversation, slack-usergroup]
-        include:
-          - name: family-slack
-            image: ghcr.io/starlightromero/provider-family-slack
-            package-root: package/family
-          - name: slack-conversation
-            image: ghcr.io/starlightromero/provider-slack-conversation
-            package-root: package/conversation
-          - name: slack-usergroup
-            image: ghcr.io/starlightromero/provider-slack-usergroup
-            package-root: package/usergroup
-    steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Install crane
-        uses: imjasonh/setup-crane@6da1ae018866400525525ce74ff892880c099987 # v0.5
-
-      - name: Substitute version into crossplane.yaml
-        run: |
-          sed -i "s/VERSION_PLACEHOLDER/v${{ needs.semantic-release.outputs.version }}-controller/" \
-            ${{ matrix.package-root }}/crossplane.yaml
-
-      - name: Login to GHCR
-        uses: docker/login-action@4907a6ddec9925e35a0a9e82d7399ccc52663121 # v4.1.0
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Build and push xpkg OCI image
-        run: |
-          # Build a YAML stream with crossplane.yaml + CRDs as package.yaml
-          cd ${{ matrix.package-root }}
-          {
-            echo "---"
-            cat crossplane.yaml
-            for crd in crds/*.yaml; do
-              echo "---"
-              cat "$crd"
-            done
-          } > /tmp/package.yaml
-
-          # Create OCI layer tarball with package.yaml at root
-          tar -cf /tmp/layer.tar -C /tmp package.yaml
-
-          # Push as single-layer OCI image (Crossplane uses the only layer as xpkg base)
-          crane append \
-            -f /tmp/layer.tar \
-            -t ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }}
-
-      - name: Copy xpkg for artifact upload
-        run: |
-          crane export ${{ matrix.image }}:v${{ needs.semantic-release.outputs.version }} - \
-            > provider-${{ matrix.name }}.xpkg 2>/dev/null || true
-
-      - name: Upload xpkg artifact
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: xpkg-${{ matrix.name }}
-          path: provider-${{ matrix.name }}.xpkg
-          if-no-files-found: ignore
 
   # ---------------------------------------------------------------------------
   # Attach artifacts to GitHub Release and generate SBOM
@@ -239,15 +181,9 @@ jobs:
   release-assets:
     name: Release Assets
     runs-on: ubuntu-latest
-    needs: [semantic-release, package, image-manifest]
+    needs: [semantic-release, image-manifest]
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-
-      - name: Download xpkg artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
-        with:
-          pattern: xpkg-*
-          merge-multiple: true
 
       - name: Generate SBOM
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
@@ -262,9 +198,6 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           gh release upload ${{ needs.semantic-release.outputs.tag }} \
-            provider-family-slack.xpkg \
-            provider-slack-conversation.xpkg \
-            provider-slack-usergroup.xpkg \
             sbom.cdx.json
 
       - name: Publish release
