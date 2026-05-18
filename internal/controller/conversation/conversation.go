@@ -172,6 +172,13 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 	if err != nil {
 		var slackErr *slack.SlackError
 		if errors.As(err, &slackErr) && slackErr.Code == "name_taken" {
+			// Channel name exists (possibly archived or created by a prior
+			// attempt whose response was lost). Search and adopt if found.
+			found, findErr := e.client.FindConversationByName(ctx, cr.Spec.ForProvider.Name)
+			if findErr == nil && found != nil {
+				meta.SetExternalName(cr, found.ID)
+				return managed.ExternalCreation{}, nil
+			}
 			cr.SetConditions(xpv1.Condition{
 				Type:    xpv1.TypeSynced,
 				Status:  "False",
