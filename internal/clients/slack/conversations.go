@@ -142,3 +142,59 @@ func (c *Client) JoinConversation(ctx context.Context, channelID string) error {
 	_, err := c.Do(ctx, "conversations.join", params)
 	return err
 }
+
+// InviteToConversation invites a user to a Slack channel.
+func (c *Client) InviteToConversation(ctx context.Context, channelID, userID string) error {
+	params := url.Values{}
+	params.Set("channel", channelID)
+	params.Set("users", userID)
+
+	_, err := c.Do(ctx, "conversations.invite", params)
+	return err
+}
+
+// KickFromConversation removes a user from a Slack channel.
+func (c *Client) KickFromConversation(ctx context.Context, channelID, userID string) error {
+	params := url.Values{}
+	params.Set("channel", channelID)
+	params.Set("user", userID)
+
+	_, err := c.Do(ctx, "conversations.kick", params)
+	return err
+}
+
+// GetConversationMembers returns the list of user IDs in a channel.
+func (c *Client) GetConversationMembers(ctx context.Context, channelID string) ([]string, error) {
+	var members []string
+	var cursor string
+	for {
+		params := url.Values{}
+		params.Set("channel", channelID)
+		params.Set("limit", "200")
+		if cursor != "" {
+			params.Set("cursor", cursor)
+		}
+
+		raw, err := c.Do(ctx, "conversations.members", params)
+		if err != nil {
+			return nil, err
+		}
+
+		var resp struct {
+			Members  []string `json:"members"`
+			Metadata struct {
+				NextCursor string `json:"next_cursor"`
+			} `json:"response_metadata"`
+		}
+		if err := json.Unmarshal(raw, &resp); err != nil {
+			return nil, fmt.Errorf("parsing conversations.members response: %w", err)
+		}
+
+		members = append(members, resp.Members...)
+		cursor = resp.Metadata.NextCursor
+		if cursor == "" {
+			break
+		}
+	}
+	return members, nil
+}
