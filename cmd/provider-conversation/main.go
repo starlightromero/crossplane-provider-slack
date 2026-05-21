@@ -33,10 +33,12 @@ import (
 
 	bookmarkv1alpha1 "github.com/avodah-inc/crossplane-provider-slack/apis/bookmark/v1alpha1"
 	conversationv1alpha1 "github.com/avodah-inc/crossplane-provider-slack/apis/conversation/v1alpha1"
+	conversationmemberv1alpha1 "github.com/avodah-inc/crossplane-provider-slack/apis/conversationmember/v1alpha1"
 	pinv1alpha1 "github.com/avodah-inc/crossplane-provider-slack/apis/pin/v1alpha1"
 	"github.com/avodah-inc/crossplane-provider-slack/apis/v1alpha1"
 	"github.com/avodah-inc/crossplane-provider-slack/internal/controller/bookmark"
 	"github.com/avodah-inc/crossplane-provider-slack/internal/controller/conversation"
+	"github.com/avodah-inc/crossplane-provider-slack/internal/controller/conversationmember"
 	"github.com/avodah-inc/crossplane-provider-slack/internal/controller/pin"
 )
 
@@ -62,6 +64,7 @@ func main() {
 	utilruntime.Must(conversationv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(bookmarkv1alpha1.AddToScheme(scheme))
 	utilruntime.Must(pinv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(conversationmemberv1alpha1.AddToScheme(scheme))
 
 	mgr, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme:           scheme,
@@ -88,6 +91,11 @@ func main() {
 
 	if err := pin.Setup(mgr, controller.Options{}); err != nil {
 		log.Error(err, "unable to setup ConversationPin controller")
+		os.Exit(1)
+	}
+
+	if err := conversationmember.Setup(mgr, controller.Options{}); err != nil {
+		log.Error(err, "unable to setup ConversationMember controller")
 		os.Exit(1)
 	}
 

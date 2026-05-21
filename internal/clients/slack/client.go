@@ -31,6 +31,11 @@ type ClientAPI interface {
 	ArchiveConversation(ctx context.Context, channelID string) error
 	JoinConversation(ctx context.Context, channelID string) error
 
+	// Conversation Members
+	InviteToConversation(ctx context.Context, channelID, userID string) error
+	KickFromConversation(ctx context.Context, channelID, userID string) error
+	GetConversationMembers(ctx context.Context, channelID string) ([]string, error)
+
 	// Bookmarks
 	AddBookmark(ctx context.Context, channelID string, params BookmarkParams) (*Bookmark, error)
 	ListBookmarks(ctx context.Context, channelID string) ([]Bookmark, error)

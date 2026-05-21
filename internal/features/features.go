@@ -37,4 +37,7 @@ const (
 
 	// EnableAlphaUserGroupMembers enables the UserGroupMembers managed resource controller.
 	EnableAlphaUserGroupMembers feature.Flag = "EnableAlphaUserGroupMembers"
+
+	// EnableAlphaConversationMember enables the ConversationMember managed resource controller.
+	EnableAlphaConversationMember feature.Flag = "EnableAlphaConversationMember"
 )

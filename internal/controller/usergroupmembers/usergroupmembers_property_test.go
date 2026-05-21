@@ -116,6 +116,15 @@ func (m *mockClientAPI) UpdateUserGroup(context.Context, string, slack.UserGroup
 	panic("not implemented")
 }
 func (m *mockClientAPI) DisableUserGroup(context.Context, string) error { panic("not implemented") }
+func (m *mockClientAPI) InviteToConversation(context.Context, string, string) error {
+	panic("not implemented")
+}
+func (m *mockClientAPI) KickFromConversation(context.Context, string, string) error {
+	panic("not implemented")
+}
+func (m *mockClientAPI) GetConversationMembers(context.Context, string) ([]string, error) {
+	panic("not implemented")
+}
 
 // Generators
 
