@@ -253,6 +253,31 @@ func TestDelete_ChannelNotFound(t *testing.T) {
 	}
 }
 
+func TestStripSlackAutoLinks(t *testing.T) {
+	tests := []struct {
+		name  string
+		input string
+		want  string
+	}{
+		{"no links", "plain text", "plain text"},
+		{"single URL", "<https://example.com>", "https://example.com"},
+		{"URL with label", "<https://example.com|Example>", "https://example.com"},
+		{"URL in text", "Visit <https://example.com> for info", "Visit https://example.com for info"},
+		{"multiple URLs", "<https://a.com> and <https://b.com>", "https://a.com and https://b.com"},
+		{"mailto", "<mailto:user@example.com|user@example.com>", "mailto:user@example.com"},
+		{"real topic", "Linear team: <https://linear.app/avodah-inc/team/PAY/all>", "Linear team: https://linear.app/avodah-inc/team/PAY/all"},
+		{"empty string", "", ""},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := stripSlackAutoLinks(tt.input)
+			if got != tt.want {
+				t.Fatalf("stripSlackAutoLinks(%q) = %q, want %q", tt.input, got, tt.want)
+			}
+		})
+	}
+}
+
 func TestObserve_DriftDetection(t *testing.T) {
 	tests := []struct {
 		name         string
@@ -292,6 +317,14 @@ func TestObserve_DriftDetection(t *testing.T) {
 			desiredTopic: nil,
 			remoteName:   "channel",
 			remoteTopic:  "",
+			wantUpToDate: true,
+		},
+		{
+			name:         "topic with URL matches Slack auto-linked version",
+			desiredName:  "channel",
+			desiredTopic: strPtr("Linear team: https://linear.app/avodah-inc/team/PAY/all"),
+			remoteName:   "channel",
+			remoteTopic:  "Linear team: <https://linear.app/avodah-inc/team/PAY/all>",
 			wantUpToDate: true,
 		},
 	}

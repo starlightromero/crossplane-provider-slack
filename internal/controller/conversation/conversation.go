@@ -20,6 +20,7 @@ package conversation
 import (
 	"context"
 	"errors"
+	"regexp"
 
 	xpv1 "github.com/crossplane/crossplane-runtime/v2/apis/common/v1"
 	xperrors "github.com/crossplane/crossplane-runtime/v2/pkg/errors"
@@ -231,14 +232,14 @@ func (e *external) Update(ctx context.Context, mg resource.Managed) (managed.Ext
 	}
 
 	desiredTopic := ptrValueOrEmpty(cr.Spec.ForProvider.Topic)
-	if desiredTopic != conv.Topic.Value {
+	if desiredTopic != stripSlackAutoLinks(conv.Topic.Value) {
 		if err := e.client.SetConversationTopic(ctx, externalName, desiredTopic); err != nil {
 			return managed.ExternalUpdate{}, xperrors.Wrap(err, errSetTopic)
 		}
 	}
 
 	desiredPurpose := ptrValueOrEmpty(cr.Spec.ForProvider.Purpose)
-	if desiredPurpose != conv.Purpose.Value {
+	if desiredPurpose != stripSlackAutoLinks(conv.Purpose.Value) {
 		if err := e.client.SetConversationPurpose(ctx, externalName, desiredPurpose); err != nil {
 			return managed.ExternalUpdate{}, xperrors.Wrap(err, errSetPurpose)
 		}
@@ -288,10 +289,10 @@ func isUpToDate(desired conversationv1alpha1.ConversationParameters, observed *s
 	if desired.Name != observed.Name {
 		return false
 	}
-	if ptrValueOrEmpty(desired.Topic) != observed.Topic.Value {
+	if ptrValueOrEmpty(desired.Topic) != stripSlackAutoLinks(observed.Topic.Value) {
 		return false
 	}
-	if ptrValueOrEmpty(desired.Purpose) != observed.Purpose.Value {
+	if ptrValueOrEmpty(desired.Purpose) != stripSlackAutoLinks(observed.Purpose.Value) {
 		return false
 	}
 	return true
@@ -318,4 +319,15 @@ func ptrValueOrEmpty(s *string) string {
 		return ""
 	}
 	return *s
+}
+
+// slackAutoLinkRe matches Slack's auto-link formatting: <URL> or <URL|label>.
+var slackAutoLinkRe = regexp.MustCompile(`<([^|>]+)(?:\|[^>]*)?>`)
+
+// stripSlackAutoLinks removes Slack's auto-link angle-bracket formatting from
+// a string. Slack wraps URLs in topic/purpose fields as <https://example.com>
+// or <mailto:user@example.com|user@example.com>. This function extracts the
+// raw URL so comparisons against the desired spec value succeed.
+func stripSlackAutoLinks(s string) string {
+	return slackAutoLinkRe.ReplaceAllString(s, "$1")
 }
