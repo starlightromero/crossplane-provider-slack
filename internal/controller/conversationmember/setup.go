@@ -62,6 +62,7 @@ func setup(mgr ctrl.Manager, o controller.Options) error {
 				return slack.NewClient(token, opts...)
 			},
 		}),
+		managed.WithManagementPolicies(),
 		managed.WithLogger(logging.NewLogrLogger(mgr.GetLogger().WithValues("controller", name))),
 		managed.WithRecorder(event.NewAPIRecorder(mgr.GetEventRecorderFor(name))),
 	)
