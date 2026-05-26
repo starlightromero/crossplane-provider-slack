@@ -147,6 +147,9 @@ func (e *external) Create(ctx context.Context, mg resource.Managed) (managed.Ext
 		return managed.ExternalCreation{}, xperrors.Wrap(err, errResolveUser)
 	}
 
+	// Ensure the bot is in the channel before inviting
+	_ = e.client.JoinConversation(ctx, channelID)
+
 	err = e.client.InviteToConversation(ctx, channelID, userID)
 	if err != nil {
 		// "already_in_channel" is not an error per the requirements
