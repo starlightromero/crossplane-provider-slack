@@ -5,8 +5,8 @@ go 1.26.0
 toolchain go1.26.3
 
 require (
-	github.com/crossplane/crossplane-runtime/v2 v2.2.1
-	github.com/crossplane/crossplane-tools v0.0.0-20251017183449-dd4517244339
+	github.com/crossplane/crossplane-runtime/v2 v2.4.0
+	github.com/crossplane/crossplane-tools v0.0.0-20260719180100-659f1dc036c5
 	k8s.io/api v0.36.1
 	k8s.io/apimachinery v0.36.1
 	k8s.io/client-go v0.36.1
